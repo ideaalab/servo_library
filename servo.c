@@ -166,6 +166,41 @@ void Servo_Mover(int num, long pos){
  * para que actualice los valores de los servos
 */
 void Servo_Refresh_Pos(void){
+	
+#if NUM_SERVOS == 1
+	if(flagAumentarDuty == TRUE){
+		flagAumentarDuty = FALSE;
+		
+		//aumenta la posicion si el servo que esta activo
+		if(Servo[0].enabled == TRUE){
+			/* estamos incrementando pos */
+			if(Servo[0].pos < Servo[0].fin){
+				Servo[0].pos = Servo[0].pos + ServoVel[Servo[0].vel];
+				//si nos pasamos
+				if(Servo[0].pos > Servo[0].fin){
+					Servo[0].pos = Servo[0].fin;
+				}
+			}
+			/* estamos disminuyendo pos */
+			else if(Servo[0].pos > Servo[0].fin){
+				Servo[0].pos = Servo[0].pos - ServoVel[Servo[0].vel];
+				//si nos pasamos
+				if(Servo[0].pos < Servo[0].fin){
+					Servo[0].pos = Servo[0].fin;
+				}
+			}
+			/* hemos llegado al final*/
+			else{	//servo[0].pos == servo[0].fin
+				//solo usamos el contador si EnergySave esta activado
+				if(EnergySave == TRUE){
+					if(++Servo[0].contES == VUELTAS_ENERGY_SAVE){
+						Servo[0].enabled = FALSE;
+					}
+				}
+			}
+		}
+	}
+#else
 	int x;
 	
 	if(flagAumentarDuty == TRUE){
@@ -202,4 +237,5 @@ void Servo_Refresh_Pos(void){
 			}
 		}
 	}
+#endif
 }
