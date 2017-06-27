@@ -22,30 +22,46 @@ short ServoOutOfRange = FALSE;
 	switch(ServoFrame){
 		case(0):
 #ifdef SERVO1_PIN
+	#ifndef SERVO_DIRECT_POSITION
 			output_bit(SERVO1_PIN, Servo[0].enabled);
+	#else
+			output_high(SERVO1_PIN);
+	#endif
 #endif
 			break;
 		case(1):
 #ifdef SERVO2_PIN
+	#ifndef SERVO_DIRECT_POSITION
 			output_bit(SERVO2_PIN, Servo[1].enabled);
+	#else
+			output_high(SERVO2_PIN);
+	#endif
 #else
 			ServoOutOfRange = TRUE;
 #endif
 			break;
 		case(2):
 #ifdef SERVO3_PIN
+	#ifndef SERVO_DIRECT_POSITION
 			output_bit(SERVO3_PIN, Servo[2].enabled);
+	#else
+			output_high(SERVO3_PIN);
+	#endif
 #else
 			ServoOutOfRange = TRUE;
 #endif
 			break;
 		case(3):
 #ifdef SERVO4_PIN
+	#ifndef SERVO_DIRECT_POSITION
 			output_bit(SERVO4_PIN, Servo[3].enabled);
+	#else
+			output_high(SERVO4_PIN);
+	#endif
 #else
 			ServoOutOfRange = TRUE;
 #endif
-			flagAumentarDuty = TRUE;
+			flagServoRefresh = TRUE;
 			break;
 	}
 	
@@ -118,12 +134,37 @@ void Servo_init(void){
 }
 
 /*
+ * POSICIONAMIENTO DE SERVOS
+ * "num" dice a que servo va dirigido
+ * "pos" dice la posicion del servo a la que queremos ir
+ * -no hace falta comprobar que estamos dentro de los limites de min y max ya que 
+ * esto se hace en Servo_Refresh_Pos()
+ */
+void Servo_Mover(int num, long pos){
+#ifndef SERVO_DIRECT_POSITION
+	Servo[num].fin = pos;
+	Servo[num].contES = 0;
+	Servo[num].enabled = TRUE;
+#else
+	Servo[num].pos = pos;
+#endif
+}
+
+/*
  * Configura el servo
  * -num: numero del servo que estamos configurando (entre 0 y NUM_SERVOS-1)
- * -vel: velocidad a la que se mueve (de 0 a 7)
+ * -vel: velocidad a la que se mueve (de 0 a 7) [si SERVO_DIRECT_POSITION = FALSE]
  * -min: valor minimo para el servo (en uS) tambien llamado POSICION1
  * -max: valor maximo para el servo (en uS)	tambien llamado POSICION2
 */
+#ifdef SERVO_DIRECT_POSITION
+void Servo_Config(int num, long min, long max){
+	//de momento asumimos que el usuario ha configurado el TRIS de cada pin
+	Servo[num].pos = min;	//establece posicion actual
+	Servo[num].min = min;	//establece minimo
+	Servo[num].max = max;	//establece maximo
+}
+#else
 void Servo_Config(int num, int vel, long min, long max){
 	//de momento asumimos que el usuario ha configurado el TRIS de cada pin
 	Servo[num].vel = vel;	//establece velocidad
@@ -148,25 +189,12 @@ void Servo_Active(int num, short en){
 }
 
 /*
- * POSICIONAMIENTO DE SERVOS
- * "num" dice a que servo va dirigido
- * "pos" dice la posicion del servo a la que queremos ir
- * -no hace falta comprobar que estamos dentro de los limites de min y max ya que 
- * esto se hace en Servo_Refresh_Pos()
- */
-void Servo_Mover(int num, long pos){
-	Servo[num].fin = pos;
-	Servo[num].contES = 0;
-	Servo[num].enabled = TRUE;
-}
-
-/*
  * ACTUALIZA POSICIONES DE SERVOS
  * esta rutina hay que llamarla constantemente desde el main
  * para que actualice los valores de los servos
 */
 void Servo_Refresh_Pos(void){
-	
+//rutina optimizada para 1 servo (consume menos memoria)
 #if NUM_SERVOS == 1
 	if(flagAumentarDuty == TRUE){
 		flagAumentarDuty = FALSE;
@@ -200,6 +228,7 @@ void Servo_Refresh_Pos(void){
 			}
 		}
 	}
+//rutina para 4 servos (consume mas memoria)
 #else
 	int x;
 	
@@ -239,3 +268,5 @@ void Servo_Refresh_Pos(void){
 	}
 #endif
 }
+
+#endif

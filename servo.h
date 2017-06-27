@@ -1,8 +1,7 @@
 /*******************************************************************************
  * File:   servo.h
- * Author: Martin
- *
- * Created on 30 de abril de 2016, 18:45
+ * Author: Martin Andersen
+ * Company: IDEAA Lab ( http://www.ideaalab.com )
  * 
  * Libreria que permite controlar entre 1 y 4 servos:
  * -Permite configurar posicion min y max para cada servo
@@ -40,7 +39,7 @@
  * 
  * -Cuando EnergySave = TRUE se deja de enviar la posicion al servo transcurrido
  * cierto tiempo. En la mayoria de los servos esto se traduce en que el servo
- * deja de posicionarse y se queda "libre" en su posicion actual. Esto ahora
+ * deja de posicionarse y se queda "libre" en su posicion actual. Esto ahorra
  * bateria, pero permite que el servo pierda su posicion por accion de una
  * fuerza externa. Por defecto esta activada, pero se puede desactivar creando
  * el siguiente define:
@@ -52,16 +51,41 @@
  * siguiente define:
  * #define TIEMPO_ENERGY_SAVE	500
  * 
+ * -Cuando posicionamos un servo segun el valor de un potenciometro tenemos la
+ * constante RANGE_UNI que multiplicada por el valor del potenciometro nos dara
+ * una posicion del servo, dentro del rango MIN y MAX establecidos.
+ * Ej:
+ *		//leo adc y lo convierto en un valor entre min y max
+ *		long pos1 = SERVO_POS_MIN + (read_adc() * RANGE_UNI);
+ *		//muevo el servo con este valor
+ *		Servo_Mover(0, pos1);
+ * 
+ * -Si queremos usar un rango diferente podemos declarar RANGE_UNI con el valor
+ * que necesitemos. Usar "NUM.0" para que el compilador entienda que queremos
+ * guardar los decimales, sino perderemos resolucion en el movimiento:
+ * #define RANGE_UNI			(S_RANGE / 500.0)
+ * 
  * -Se crea un array con los valores de cada servo. Cada servo necesita 10 bytes
  * y los valores son los siguientes:
  * Servo[num]
- *			.pos: posicion actual del servo
- *			.fin: posicion a la que queremos llegar
- *			.min: posicion minima del servo
- *			.max: posicion maxima del servo
- *			.enabled: flag para saber si el servo se esta moviendo
- *			.vel: velocidad del servo, del 1 al 8
- *			.contES: variable para contar el energy save
+ *			.pos: posicion actual del servo							(2 bytes)
+ *			.fin: posicion a la que queremos llegar					(2 bytes)
+ *			.min: posicion minima del servo							(2 bytes)
+ *			.max: posicion maxima del servo							(2 bytes)
+ *			.enabled: flag para saber si el servo se esta moviendo	(1 bit)
+ *			.vel: velocidad del servo, del 1 al 8					(3 bits)
+ *			.nul: estos bits no se usan								(4 bits)
+ *			.contES: variable para contar el energy save			(1 byte)
+ * 
+ * -Si se crea un define SERVO_DIRECT_POSITION entonces los servos se posicionan
+ * directamente, por lo que fin, enabled, vel, contES no se usan y ahorramos RAM
+ * ya que cada servo solo necesita 6 bytes:
+ * #define SERVO_DIRECT_POSITION
+ * 
+ * Servo[num]
+ *			.pos: posicion actual del servo							(2 bytes)
+ *			.min: posicion minima del servo							(2 bytes)
+ *			.max: posicion maxima del servo							(2 bytes)
  * 
  *******************************************************************************
  *FUNCIONES
@@ -88,8 +112,12 @@
  * 
  * -void Servo_Refresh_Pos(void)
  *	Actualiza la posicion de los servos. Esta rutina hay que ponerla en el main
- *	para llamarla constantemente desde el main para que actualice los valores de
- *  los servos
+ *	para llamarla constantemente y que actualice los valores de  los servos.
+ *  Usar solo en caso de que NO estemos usando SERVO_DIRECT_POSITION
+ * 
+ * -Si estamos usando SERVO_DIRECT_POSITION y queremos un control mas directo de
+ *  los servos podemos escribir y leer directamente en Servo[x].pos/min/max en
+ *  vez de usar las funciones Servo_Config() y Servo_Mover().
  *  
  ******************************************************************************/
 
@@ -159,6 +187,14 @@
 #define FALSE				0
 #endif
 
+#if getenv("ADC_RESOLUTION") == 8
+#define ADC_MAX_VAL		255
+#elif getenv("ADC_RESOLUTION") == 10
+#define ADC_MAX_VAL		1023
+#else
+#ERROR "Resolucion del ADC no soportada."
+#endif
+
 #define MAX_SERVOS			4	//cuantos servos podemos manejar
 
 #if NUM_SERVOS > MAX_SERVOS
@@ -203,7 +239,10 @@
 #endif
 
 #define S_RANGE				(SERVO_POS_MAX - SERVO_POS_MIN)	//rango de posiciones
+#define S_CENTER			(S_RANGE / 2)					//centro del PWM
+#ifndef RANGE_UNI
 #define RANGE_UNI			(S_RANGE / 255.0)				//cuantas unidades de posicion incrementa cada unidad de adc
+#endif
 
 #define CERO_TIMER1			(65535 - (SERVO_PERIOD / MAX_SERVOS))	//para que reinicie cada 5mS
 
@@ -225,6 +264,13 @@
 #define VUELTAS_ENERGY_SAVE	(1000 * TIEMPO_ENERGY_SAVE / SERVO_PERIOD)
 /* ------------------ */
 
+#ifdef SERVO_DIRECT_POSITION
+typedef struct{
+	long pos;		//posicion actual del servo (2 bytes)
+	long min;		//posicion minima del servo (2 bytes)
+	long max;		//posicion maxima del servo (2 bytes)
+}servo_t;
+#else
 typedef struct{
 	long pos;		//posicion actual del servo (2 bytes)
 	long fin;		//posicion a la que queremos llegar (2 bytes)
@@ -235,21 +281,27 @@ typedef struct{
 	int nul:4;		//de momento estos 4 bits no se usan
 	int contES;		//variable para contar el energy save (1 byte)
 }servo_t;
+#endif
 
 /* VARIABLES GOBALES */
+#ifndef SERVO_DIRECT_POSITION
 short EnergySave = ENERGY_SAVE_DEFAULT;		//indica si los servos funcionan constantemente o solo durante un tiempo
-short flagAumentarDuty = FALSE;	//indica si hay que modificar el pulso de los servos
-
-int ServoFrame = 0;				//variable para saber que servo estamos controlando
-
 const int ServoVel[SERVO_NUM_VEL] = {SERVO_VEL1, SERVO_VEL2, SERVO_VEL3, SERVO_VEL4, SERVO_VEL5, SERVO_VEL6, SERVO_VEL7, SERVO_VEL8};
+#endif
+
+short flagServoRefresh = FALSE;	//indica si hay que modificar el pulso de los servos
+int ServoFrame = 0;				//variable para saber que servo estamos controlando
 servo_t Servo[NUM_SERVOS];		//crea la variable de servos
 
 /* PROTOTIPOS */
 void Servo_init(void);
+void Servo_Mover(int num, long pos);
+#ifdef SERVO_DIRECT_POSITION
+void Servo_Config(int num, long min, long max);
+#else
 void Servo_Config(int num, int vel, long min, long max);
 void Servo_Active(int num, short en);
-void Servo_Mover(int num, long pos);
 void Servo_Refresh_Pos(void);
+#endif
 
 #endif	/* SERVO_H */
