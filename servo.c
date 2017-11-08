@@ -141,12 +141,21 @@ void Servo_init(void){
  * esto se hace en Servo_Refresh_Pos()
  */
 void Servo_Mover(int num, long pos){
-#ifndef SERVO_DIRECT_POSITION
+#ifdef SERVO_DIRECT_POSITION
+	Servo[num].pos = pos;
+#else
 	Servo[num].fin = pos;
 	Servo[num].contES = 0;
 	Servo[num].enabled = TRUE;
-#else
-	Servo[num].pos = pos;
+	
+	Servo[num].stop = FALSE;
+	
+	if(pos == Servo[num].min){
+		Servo[num].dirPos = S_MIN;
+	}
+	else if(pos == Servo[num].max){
+		Servo[num].dirPos = S_MAX;
+	}
 #endif
 }
 
@@ -163,6 +172,7 @@ void Servo_Config(int num, long min, long max){
 	Servo[num].pos = min;	//establece posicion actual
 	Servo[num].min = min;	//establece minimo
 	Servo[num].max = max;	//establece maximo
+	Servo[num].enabled = TRUE;
 }
 #else
 void Servo_Config(int num, int vel, long min, long max){
@@ -175,6 +185,7 @@ void Servo_Config(int num, int vel, long min, long max){
 	Servo[num].fin = min;
 	Servo[num].contES = 0;
 	Servo[num].enabled = FALSE;
+	Servo[num].stop = TRUE;
 	//Servo[num].enabled = TRUE;
 }
 
@@ -196,8 +207,8 @@ void Servo_Active(int num, short en){
 void Servo_Refresh_Pos(void){
 //rutina optimizada para 1 servo (consume menos memoria)
 #if NUM_SERVOS == 1
-	if(flagAumentarDuty == TRUE){
-		flagAumentarDuty = FALSE;
+	if(flagServoRefresh == TRUE){
+		flagServoRefresh = FALSE;
 		
 		//aumenta la posicion si el servo que esta activo
 		if(Servo[0].enabled == TRUE){
@@ -219,6 +230,7 @@ void Servo_Refresh_Pos(void){
 			}
 			/* hemos llegado al final*/
 			else{	//servo[0].pos == servo[0].fin
+				Servo[0].stop = TRUE;
 				//solo usamos el contador si EnergySave esta activado
 				if(EnergySave == TRUE){
 					if(++Servo[0].contES == VUELTAS_ENERGY_SAVE){
@@ -232,8 +244,8 @@ void Servo_Refresh_Pos(void){
 #else
 	int x;
 	
-	if(flagAumentarDuty == TRUE){
-		flagAumentarDuty = FALSE;
+	if(flagServoRefresh == TRUE){
+		flagServoRefresh = FALSE;
 		
 		//aumenta la posicion en los servos que estan activos
 		for(x=0;x<MAX_SERVOS;x++){
@@ -256,6 +268,7 @@ void Servo_Refresh_Pos(void){
 				}
 				/* hemos llegado al final*/
 				else{	//servo[x].pos == servo[x].fin
+					Servo[x].stop = TRUE;
 					//solo usamos el contador si EnergySave esta activado
 					if(EnergySave == TRUE){
 						if(++Servo[x].contES == VUELTAS_ENERGY_SAVE){

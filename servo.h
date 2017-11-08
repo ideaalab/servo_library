@@ -74,7 +74,9 @@
  *			.max: posicion maxima del servo							(2 bytes)
  *			.enabled: flag para saber si el servo se esta moviendo	(1 bit)
  *			.vel: velocidad del servo, del 1 al 8					(3 bits)
- *			.nul: estos bits no se usan								(4 bits)
+ *			.stop: indica si el servo ha llegado al fin				(1 bit)
+ *			.dirPos: indica hacia donde se mueve (S_MIN / S_MAX)	(1 bit)
+ *			.nul: estos bits no se usan								(2 bits)
  *			.contES: variable para contar el energy save			(1 byte)
  * 
  * -Si se crea un define SERVO_DIRECT_POSITION entonces los servos se posicionan
@@ -219,6 +221,9 @@
 #define SERVO_VEL_DEFAULT	(SERVO_NUM_VEL - 1)
 #endif
 
+#define S_MIN	0
+#define S_MAX	1
+
 //posiciones
 #define SERVO_PERIOD		20000	//en uS
 
@@ -278,7 +283,9 @@ typedef struct{
 	long max;		//posicion maxima del servo (2 bytes)
 	int enabled:1;	//flag para saber si el servo se esta moviendo (1 bit)
 	int vel:3;		//velocidad del servo, 8 velocidades (3 bits)
-	int nul:4;		//de momento estos 4 bits no se usan
+	int stop:1;		//flag para saber si llego al final del movimiento
+	int dirPos:1;	//indica si se encuentra de camino a S_MIN o S_MAX
+	int nul:2;		//de momento estos 2 bits no se usan
 	int contES;		//variable para contar el energy save (1 byte)
 }servo_t;
 #endif
