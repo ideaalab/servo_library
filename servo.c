@@ -1,7 +1,3 @@
-/*
- * Libreria para mover servos
-*/
-
 #include "servo.h"
 
 /*
@@ -134,11 +130,57 @@ void Servo_init(void){
 }
 
 /*
+ * Configura el servo
+ * -num: numero del servo que estamos configurando (entre 0 y NUM_SERVOS-1)
+ * -vel: velocidad a la que se mueve (de 0 a 7) [para SERVO_INDIRECT_POSITION]
+ * -es: EnergySave activo o no [para SERVO_INDIRECT_POSITION]
+ * -min: valor minimo para el servo (en uS) tambien llamado POSICION1
+ * -max: valor maximo para el servo (en uS)	tambien llamado POSICION2
+*/
+#ifdef SERVO_DIRECT_POSITION
+void Servo_Config(int num, long min, long max){
+	//de momento asumimos que el usuario ha configurado el TRIS de cada pin
+	Servo[num].pos = min;	//establece posicion actual
+	Servo[num].min = min;	//establece minimo
+	Servo[num].max = max;	//establece maximo
+	Servo[num].enabled = TRUE;
+}
+#else
+void Servo_Config(int num, int vel, short es, long min, long max){
+	//de momento asumimos que el usuario ha configurado el TRIS de cada pin
+	Servo[num].vel = vel;	//establece velocidad
+	Servo[num].min = min;	//establece minimo
+	Servo[num].max = max;	//establece maximo
+
+	Servo[num].pos = min;	//establece posicion actual
+	Servo[num].fin = min;
+	Servo[num].ES = es;
+	Servo[num].contES = 0;
+	Servo[num].enabled = FALSE;
+	Servo[num].stop = TRUE;
+	//Servo[num].enabled = TRUE;
+}
+
+/*
+ * ACTIVA O DESACTIVA EL ENVIO DE PULSOS AL SERVO
+ *	"num" dice a que servo va dirigido
+ *	"en" dice si lo activamos (true) o desactivamos (false)
+ */
+#ifdef SERVO_INDIRECT_POSITION
+void Servo_Active(int num, short en){
+	Servo[num].contES = 0;
+	Servo[num].enabled = en;
+}
+#endif
+
+/*
  * POSICIONAMIENTO DE SERVOS
  * "num" dice a que servo va dirigido
  * "pos" dice la posicion del servo a la que queremos ir
- * -no hace falta comprobar que estamos dentro de los limites de min y max ya que 
- * esto se hace en Servo_Refresh_Pos()
+ * -Para SERVO_DIRECT_POSITION asumimos que el valor que nos pasan esta dentro
+ * de los limites del servo
+ * -Para SERVO_INDIRECT_POSITION no hace falta comprobar que estamos dentro de
+ * los limites de min y max ya que esto se hace en Servo_Refresh_Pos()
  */
 void Servo_Mover(int num, long pos){
 #ifdef SERVO_DIRECT_POSITION
@@ -160,50 +202,11 @@ void Servo_Mover(int num, long pos){
 }
 
 /*
- * Configura el servo
- * -num: numero del servo que estamos configurando (entre 0 y NUM_SERVOS-1)
- * -vel: velocidad a la que se mueve (de 0 a 7) [si SERVO_DIRECT_POSITION = FALSE]
- * -min: valor minimo para el servo (en uS) tambien llamado POSICION1
- * -max: valor maximo para el servo (en uS)	tambien llamado POSICION2
-*/
-#ifdef SERVO_DIRECT_POSITION
-void Servo_Config(int num, long min, long max){
-	//de momento asumimos que el usuario ha configurado el TRIS de cada pin
-	Servo[num].pos = min;	//establece posicion actual
-	Servo[num].min = min;	//establece minimo
-	Servo[num].max = max;	//establece maximo
-	Servo[num].enabled = TRUE;
-}
-#else
-void Servo_Config(int num, int vel, long min, long max){
-	//de momento asumimos que el usuario ha configurado el TRIS de cada pin
-	Servo[num].vel = vel;	//establece velocidad
-	Servo[num].min = min;	//establece minimo
-	Servo[num].max = max;	//establece maximo
-
-	Servo[num].pos = min;	//establece posicion actual
-	Servo[num].fin = min;
-	Servo[num].contES = 0;
-	Servo[num].enabled = FALSE;
-	Servo[num].stop = TRUE;
-	//Servo[num].enabled = TRUE;
-}
-
-/*
- * ACTIVA O DESACTIVA EL ENVIO DE PULSOS AL SERVO
- *	"num" dice a que servo va dirigido
- *	"en" dice si lo activamos (true) o desactivamos (false)
- */
-void Servo_Active(int num, short en){
-	Servo[num].contES = 0;
-	Servo[num].enabled = en;
-}
-
-/*
  * ACTUALIZA POSICIONES DE SERVOS
  * esta rutina hay que llamarla constantemente desde el main
  * para que actualice los valores de los servos
-*/
+ */
+#ifdef SERVO_INDIRECT_POSITION
 void Servo_Refresh_Pos(void){
 //rutina optimizada para 1 servo (consume menos memoria)
 #if NUM_SERVOS == 1
@@ -232,7 +235,7 @@ void Servo_Refresh_Pos(void){
 			else{	//servo[0].pos == servo[0].fin
 				Servo[0].stop = TRUE;
 				//solo usamos el contador si EnergySave esta activado
-				if(EnergySave == TRUE){
+				if(Servo[0].ES == TRUE){
 					if(++Servo[0].contES == VUELTAS_ENERGY_SAVE){
 						Servo[0].enabled = FALSE;
 					}
@@ -270,7 +273,7 @@ void Servo_Refresh_Pos(void){
 				else{	//servo[x].pos == servo[x].fin
 					Servo[x].stop = TRUE;
 					//solo usamos el contador si EnergySave esta activado
-					if(EnergySave == TRUE){
+					if(Servo[x].ES == TRUE){
 						if(++Servo[x].contES == VUELTAS_ENERGY_SAVE){
 							Servo[x].enabled = FALSE;
 						}
@@ -281,5 +284,6 @@ void Servo_Refresh_Pos(void){
 	}
 #endif
 }
+#endif
 
 #endif
