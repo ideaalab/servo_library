@@ -109,17 +109,17 @@ void CCP1_isr(void){
 */ 
 void Servo_init(void){
 //timer1 config
-#IF getenv("CLOCK") == 4000000
+#if getenv("CLOCK") == 4000000
 	setup_timer_1(T1_INTERNAL|T1_DIV_BY_1);		
-#ELIF getenv("CLOCK") == 8000000
+#elif getenv("CLOCK") == 8000000
 	setup_timer_1(T1_INTERNAL|T1_DIV_BY_2);
-#ELIF getenv("CLOCK") == 16000000
+#elif getenv("CLOCK") == 16000000
 	setup_timer_1(T1_INTERNAL|T1_DIV_BY_4);
-#ELIF getenv("CLOCK") == 32000000
+#elif getenv("CLOCK") == 32000000
 	setup_timer_1(T1_INTERNAL|T1_DIV_BY_8);
-#ELSE
+#else
 	#ERROR La velocidad del PIC debe ser de 4, 8, 16 o 32Mhz
-#ENDIF
+#endif
 	
 	CCP_1 = Servo[0].min;			//le da el primer valor a CCP1 para que interrumpa cuando debe
 	setup_ccp1(CCP_COMPARE_INT);	//configura CCP
@@ -143,7 +143,7 @@ void Servo_Config(int num, long min, long max){
 	Servo[num].pos = min;	//establece posicion actual
 	Servo[num].min = min;	//establece minimo
 	Servo[num].max = max;	//establece maximo
-	Servo[num].enabled = TRUE;
+	//Servo[num].enabled = TRUE;
 }
 #else
 void Servo_Config(int num, int vel, short es, long min, long max){
@@ -160,13 +160,14 @@ void Servo_Config(int num, int vel, short es, long min, long max){
 	Servo[num].stop = TRUE;
 	//Servo[num].enabled = TRUE;
 }
+#endif
 
+#ifdef SERVO_INDIRECT_POSITION
 /*
  * ACTIVA O DESACTIVA EL ENVIO DE PULSOS AL SERVO
  *	"num" dice a que servo va dirigido
  *	"en" dice si lo activamos (true) o desactivamos (false)
  */
-#ifdef SERVO_INDIRECT_POSITION
 void Servo_Active(int num, short en){
 	Servo[num].contES = 0;
 	Servo[num].enabled = en;
@@ -201,12 +202,12 @@ void Servo_Mover(int num, long pos){
 #endif
 }
 
+#ifdef SERVO_INDIRECT_POSITION
 /*
  * ACTUALIZA POSICIONES DE SERVOS
  * esta rutina hay que llamarla constantemente desde el main
  * para que actualice los valores de los servos
  */
-#ifdef SERVO_INDIRECT_POSITION
 void Servo_Refresh_Pos(void){
 //rutina optimizada para 1 servo (consume menos memoria)
 #if NUM_SERVOS == 1
@@ -284,6 +285,4 @@ void Servo_Refresh_Pos(void){
 	}
 #endif
 }
-#endif
-
 #endif
