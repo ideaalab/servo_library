@@ -18,19 +18,19 @@ short ServoOutOfRange = FALSE;
 	switch(ServoFrame){
 		case(0):
 #ifdef SERVO1_PIN
-	#ifndef SERVO_DIRECT_POSITION
-			output_bit(SERVO1_PIN, Servo[0].enabled);
-	#else
+	#ifdef SERVO_DIRECT_POSITION
 			output_high(SERVO1_PIN);
+	#else
+			output_bit(SERVO1_PIN, Servo[0].enabled);
 	#endif
 #endif
 			break;
 		case(1):
 #ifdef SERVO2_PIN
-	#ifndef SERVO_DIRECT_POSITION
-			output_bit(SERVO2_PIN, Servo[1].enabled);
-	#else
+	#ifdef SERVO_DIRECT_POSITION
 			output_high(SERVO2_PIN);
+	#else
+			output_bit(SERVO2_PIN, Servo[1].enabled);
 	#endif
 #else
 			ServoOutOfRange = TRUE;
@@ -38,10 +38,10 @@ short ServoOutOfRange = FALSE;
 			break;
 		case(2):
 #ifdef SERVO3_PIN
-	#ifndef SERVO_DIRECT_POSITION
-			output_bit(SERVO3_PIN, Servo[2].enabled);
-	#else
+	#ifdef SERVO_DIRECT_POSITION
 			output_high(SERVO3_PIN);
+	#else
+			output_bit(SERVO3_PIN, Servo[2].enabled);
 	#endif
 #else
 			ServoOutOfRange = TRUE;
@@ -49,10 +49,10 @@ short ServoOutOfRange = FALSE;
 			break;
 		case(3):
 #ifdef SERVO4_PIN
-	#ifndef SERVO_DIRECT_POSITION
-			output_bit(SERVO4_PIN, Servo[3].enabled);
-	#else
+	#ifdef SERVO_DIRECT_POSITION
 			output_high(SERVO4_PIN);
+	#else
+			output_bit(SERVO4_PIN, Servo[3].enabled);
 	#endif
 #else
 			ServoOutOfRange = TRUE;
