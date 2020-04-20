@@ -19,18 +19,18 @@ short ServoOutOfRange = FALSE;
 		case(0):
 #ifdef SERVO1_PIN
 	#ifdef SERVO_DIRECT_POSITION
-			output_high(SERVO1_PIN);
+			SERVO_SIGNAL_HIGH(SERVO1_PIN);
 	#else
-			output_bit(SERVO1_PIN, Servo[0].enabled);
+			output_bit(SERVO1_PIN, SERVO_ENABLED(0));
 	#endif
 #endif
 			break;
 		case(1):
 #ifdef SERVO2_PIN
 	#ifdef SERVO_DIRECT_POSITION
-			output_high(SERVO2_PIN);
+			SERVO_SIGNAL_HIGH(SERVO2_PIN);
 	#else
-			output_bit(SERVO2_PIN, Servo[1].enabled);
+			output_bit(SERVO2_PIN, SERVO_ENABLED(1));
 	#endif
 #else
 			ServoOutOfRange = TRUE;
@@ -39,9 +39,9 @@ short ServoOutOfRange = FALSE;
 		case(2):
 #ifdef SERVO3_PIN
 	#ifdef SERVO_DIRECT_POSITION
-			output_high(SERVO3_PIN);
+			SERVO_SIGNAL_HIGH(SERVO3_PIN);
 	#else
-			output_bit(SERVO3_PIN, Servo[2].enabled);
+			output_bit(SERVO3_PIN, SERVO_ENABLED(2));
 	#endif
 #else
 			ServoOutOfRange = TRUE;
@@ -50,9 +50,9 @@ short ServoOutOfRange = FALSE;
 		case(3):
 #ifdef SERVO4_PIN
 	#ifdef SERVO_DIRECT_POSITION
-			output_high(SERVO4_PIN);
+			SERVO_SIGNAL_HIGH(SERVO4_PIN);
 	#else
-			output_bit(SERVO4_PIN, Servo[3].enabled);
+			output_bit(SERVO4_PIN, SERVO_ENABLED(3));
 	#endif
 #else
 			ServoOutOfRange = TRUE;
@@ -76,25 +76,25 @@ void CCP1_isr(void){
 	switch(ServoFrame){
 		case(0):
 #ifdef SERVO1_PIN
-			output_low(SERVO1_PIN);
+			SERVO_SIGNAL_LOW(SERVO1_PIN);
 #endif
 			ServoFrame = 1;
 			break;
 		case(1):
 #ifdef SERVO2_PIN
-			output_low(SERVO2_PIN);
+			SERVO_SIGNAL_LOW(SERVO2_PIN);
 #endif
 			ServoFrame = 2;
 			break;
 		case(2):
 #ifdef SERVO3_PIN
-			output_low(SERVO3_PIN);
+			SERVO_SIGNAL_LOW(SERVO3_PIN);
 #endif
 			ServoFrame = 3;
 			break;
 		case(3):
 #ifdef SERVO4_PIN
-			output_low(SERVO4_PIN);
+			SERVO_SIGNAL_LOW(SERVO4_PIN);
 #endif
 			ServoFrame = 0;
 			break;

@@ -65,6 +65,12 @@
  * .contES, .dirPos, .stop no se usan
  * #define SERVO_DIRECT_POSITION
  * 
+ * >Si nuestro circuito tiene algun tipo de adaptador de señal, conversor de
+ * niveles, etc. que invierte la señal del servo, podemos usar la constante:
+ * #define SERVO_INVERT_SIGNAL
+ * Esto hara que la señal salga invertida, y al pasar por el conversor de
+ * niveles la señal se desinvierta
+ * 
  * >Se puede configurar un minimo y un maximo GLOBAL en uS para el movimiento de
  * los servos. Esto limita el movimiento de los servos dentro de ese rango.
  * Los limites individuales de cada servo no podran ser mayores que los limites
@@ -248,13 +254,13 @@
 #define FALSE				0
 #endif
 
-#if getenv("ADC_RESOLUTION") == 10
+/*#if getenv("ADC_RESOLUTION") == 10
 //si la resolucion es de 10 bits
 #define ADC_MAX_VAL		(1023.0)
 #else
 //si la resolucion es otra asumimos que es de 8 bits
 #define ADC_MAX_VAL		(255.0)
-#endif
+#endif*/
 
 #define MAX_SERVOS			4	//cuantos servos podemos manejar
 
@@ -302,14 +308,13 @@
 #define SERVO_POS2			1700	//posicion2 por defecto
 #endif
 
-#define S_RANGE				(SERVO_POS_MAX - SERVO_POS_MIN)	//rango de posiciones del servo
-#define S_CENTER			(S_RANGE / 2)					//centro del PWM
+//#define S_RANGE				(SERVO_POS_MAX - SERVO_POS_MIN)	//rango de posiciones del servo
+//#define S_CENTER			(S_RANGE / 2)					//centro del PWM
 
-#ifndef RANGE_MAX_VAL
+/*#ifndef RANGE_MAX_VAL
 #define RANGE_MAX_VAL		ADC_MAX_VAL
-#endif
-#define RANGE_UNI			(S_RANGE / RANGE_MAX_VAL)		//cuantas unidades de posicion del servo incrementa cada unidad del rango
-
+#endif*/
+//#define RANGE_UNI			(S_RANGE / RANGE_MAX_VAL)		//cuantas unidades de posicion del servo incrementa cada unidad del rango
 
 #define CERO_TIMER1			(65535 - (SERVO_PERIOD / MAX_SERVOS))	//para que reinicie cada 5mS
 
@@ -362,6 +367,17 @@ const int ServoVel[SERVO_NUM_VEL] = {SERVO_VEL1, SERVO_VEL2, SERVO_VEL3, SERVO_V
 short flagServoRefresh = FALSE;	//indica si hay que modificar el pulso de los servos
 int ServoFrame = 0;				//variable para saber que servo estamos controlando
 servo_t Servo[NUM_SERVOS];		//crea la variable de servos
+
+/* MACROS */
+#ifdef SERVO_INVERT_SIGNAL
+#define SERVO_SIGNAL_HIGH(x)	output_low(x)
+#define SERVO_SIGNAL_LOW(x)		output_high(x)
+#define SERVO_ENABLED(x)		!Servo[x].enabled
+#else
+#define SERVO_SIGNAL_HIGH(x)	output_high(x)
+#define SERVO_SIGNAL_LOW(x)		output_low(x)
+#define SERVO_ENABLED(x)		Servo[x].enabled
+#endif
 
 /* PROTOTIPOS */
 void Servo_init(void);
