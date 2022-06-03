@@ -65,11 +65,11 @@
  * .contES, .dirPos, .stop no se usan
  * #define SERVO_DIRECT_POSITION
  * 
- * >Si nuestro circuito tiene algun tipo de adaptador de señal, conversor de
- * niveles, etc. que invierte la señal del servo, podemos usar la constante:
+ * >Si nuestro circuito tiene algun tipo de adaptador de seÃ±al, conversor de
+ * niveles, etc. que invierte la seÃ±al del servo, podemos usar la constante:
  * #define SERVO_INVERT_SIGNAL
- * Esto hara que la señal salga invertida, y al pasar por el conversor de
- * niveles la señal se desinvierta
+ * Esto hara que la seÃ±al salga invertida, y al pasar por el conversor de
+ * niveles la seÃ±al se desinvierta
  * 
  * >Se puede configurar un minimo y un maximo GLOBAL en uS para el movimiento de
  * los servos. Esto limita el movimiento de los servos dentro de ese rango.
@@ -79,7 +79,7 @@
  * #define SERVO_POS_MIN		1000
  * #define SERVO_POS_MAX		2000
  * 
- * >Por defecto las posiciones min/max de los servos son 700uS y 1700uS.
+ * >Por defecto las posiciones 1 y 2 de los servos son 700uS y 1700uS.
  * Si se quiere usar otras hay que crear los siguiente define con valores
  * comprendidos entre SERVO_POS_MIN y SERVO_POS_MAX
  * #define SERVO_POS1			1200	//posicion1 por defecto
@@ -94,7 +94,7 @@
  * #define ENERGY_SAVE_DEFAULT	FALSE
  * 
  * >Si EnergySave esta activado y una vez que el servo llego a la posicion final
- * comienza un temporizador que una vez finalizado deja de enviar señal al servo
+ * comienza un temporizador que una vez finalizado deja de enviar seÃ±al al servo
  * El tiempo por defecto es de 1000mS, pero se puede cambiar creando el
  * siguiente define:
  * #define TIEMPO_ENERGY_SAVE	500
