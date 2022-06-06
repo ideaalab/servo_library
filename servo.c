@@ -7,6 +7,8 @@
  * actualiza el CCP con el valor de dicho servo.
  * Cuando trabajamos con menos de 4 servos los servos que no se usan no tienen
  * CCP al que actualizar, por lo que se usa un valor cualquiera dentro del rango
+ * 
+ * Usa 56 de ROM
  */
 #int_TIMER1 //timer control de servo
 void TIMER1_isr(void) {
@@ -69,7 +71,12 @@ short ServoOutOfRange = FALSE;
 	}
 }
 
-/* CCP */
+/*
+ * CCP 1
+ * Pone en LOW el PWM del servo correspondiente
+ * 
+ * Usa 22 de ROM
+ */
 #int_CCP1
 void CCP1_isr(void){
 	//apaga el servo correspondiente
@@ -106,7 +113,9 @@ void CCP1_isr(void){
 /* 
  * Configura el timer1 para que tenga ticks de 1uS
  * Habilita las interrupciones
-*/ 
+ * 
+ * Usa 33 de ROM
+ */ 
 void Servo_init(void){
 //timer1 config
 #if getenv("CLOCK") == 4000000
@@ -132,11 +141,11 @@ void Servo_init(void){
 /*
  * Configura el servo
  * -num: numero del servo que estamos configurando (entre 0 y NUM_SERVOS-1)
- * -vel: velocidad a la que se mueve (de 0 a 7) [para SERVO_INDIRECT_POSITION]
- * -es: EnergySave activo o no [para SERVO_INDIRECT_POSITION]
  * -min: valor minimo para el servo (en uS) tambien llamado POSICION1
  * -max: valor maximo para el servo (en uS)	tambien llamado POSICION2
-*/
+ * -vel: velocidad a la que se mueve (de 0 a 7) [para SERVO_INDIRECT_POSITION]
+ * -es: EnergySave activo o no [para SERVO_INDIRECT_POSITION]
+ */
 #ifdef SERVO_DIRECT_POSITION
 void Servo_Config(int num, long min, long max){
 	//de momento asumimos que el usuario ha configurado el TRIS de cada pin
@@ -146,7 +155,7 @@ void Servo_Config(int num, long min, long max){
 	//Servo[num].enabled = TRUE;
 }
 #else
-void Servo_Config(int num, int vel, short es, long min, long max){
+void Servo_Config(int num, long min, long max, int vel, short es){
 	//de momento asumimos que el usuario ha configurado el TRIS de cada pin
 	Servo[num].vel = vel;	//establece velocidad
 	Servo[num].min = min;	//establece minimo
@@ -182,6 +191,8 @@ void Servo_Active(int num, short en){
  * de los limites del servo
  * -Para SERVO_INDIRECT_POSITION no hace falta comprobar que estamos dentro de
  * los limites de min y max ya que esto se hace en Servo_Refresh_Pos()
+ * 
+ * Usa 23 de ROM
  */
 void Servo_Mover(int num, long pos){
 #ifdef SERVO_DIRECT_POSITION
@@ -207,6 +218,8 @@ void Servo_Mover(int num, long pos){
  * ACTUALIZA POSICIONES DE SERVOS
  * esta rutina hay que llamarla constantemente desde el main
  * para que actualice los valores de los servos
+ * 
+ * Usa 
  */
 void Servo_Refresh_Pos(void){
 //rutina optimizada para 1 servo (consume menos memoria)
@@ -286,3 +299,35 @@ void Servo_Refresh_Pos(void){
 #endif
 }
 #endif
+
+/*
+ * Mueve el servo a una posicion acorde al valor de un potenciometro
+ * Consume mas ROM pero es mas precisa
+ * 
+ * Consume 202 de ROM
+ */
+void Servo_Mover_Pot(int num, int potVal){
+signed int32 tmp = 0;
+
+	tmp = potVal * RANGO_SERVOS;
+	tmp = tmp / POT_MAX_VAL;
+
+	Servo_Mover(num, Servo[num].min + tmp);
+}
+
+/*
+ * Mueve el servo a una posicion acorde al valor de un potenciometro
+ * Para usar esta funcion hay que calcular SERVO_POS_MIN y SERVO_POS_MAX
+ * de acuerdo con el archivo de Excel adjunto para que los resultados sean
+ * mas precisos
+ * 
+ * Consume 76 de ROM
+ */
+void Servo_Mover_Pot_Small(int num, int potVal){
+signed int32 tmp = 0;
+
+	tmp = potVal * RANGO_SERVOS;
+	tmp = DIV_BY_256(tmp);
+
+	Servo_Mover(num, Servo[num].min + tmp);
+}

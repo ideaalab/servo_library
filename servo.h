@@ -69,14 +69,6 @@
 #define FALSE				0
 #endif
 
-/*#if getenv("ADC_RESOLUTION") == 10
-//si la resolucion es de 10 bits
-#define ADC_MAX_VAL		(1023.0)
-#else
-//si la resolucion es otra asumimos que es de 8 bits
-#define ADC_MAX_VAL		(255.0)
-#endif*/
-
 #define MAX_SERVOS			4	//cuantos servos podemos manejar
 
 #if NUM_SERVOS > MAX_SERVOS
@@ -123,14 +115,6 @@
 #define SERVO_POS2			1700	//posicion2 por defecto
 #endif
 
-//#define S_RANGE				(SERVO_POS_MAX - SERVO_POS_MIN)	//rango de posiciones del servo
-//#define S_CENTER			(S_RANGE / 2)					//centro del PWM
-
-/*#ifndef RANGE_MAX_VAL
-#define RANGE_MAX_VAL		ADC_MAX_VAL
-#endif*/
-//#define RANGE_UNI			(S_RANGE / RANGE_MAX_VAL)		//cuantas unidades de posicion del servo incrementa cada unidad del rango
-
 #define CERO_TIMER1			(65535 - (SERVO_PERIOD / MAX_SERVOS))	//para que reinicie cada 5mS
 
 #define SERVO_MIN			(CERO_TIMER1 + SERVO_POS_MIN)	//posicion minima del servo con respecto al timer 1
@@ -138,6 +122,16 @@
 
 #define SERVO_DEF1			(CERO_TIMER1 + SERVO_POS1)	//posicion 1 por defecto con respecto al timer 1
 #define SERVO_DEF2			(CERO_TIMER1 + SERVO_POS2)	//posicion 2 por defecto con respecto al timer 1
+
+//Calculos ADC/POT -> Posicion servo
+#define RANGO_SERVOS		(signed int32)(SERVO_POS_MAX - SERVO_POS_MIN)
+
+
+#ifndef POT_MAX_VAL
+#define POT_MAX_VAL		255
+#endif
+
+#define DIV_BY_256(x)	(x>>8)	//macro para dividir un valor entre 256
 
 //energy save
 #ifndef ENERGY_SAVE_DEFAULT
@@ -195,12 +189,18 @@ servo_t Servo[NUM_SERVOS];		//crea la variable de servos
 #endif
 
 /* PROTOTIPOS */
+void TIMER1_isr(void);
+void CCP1_isr(void);
+
 void Servo_init(void);
 void Servo_Mover(int num, long pos);
+void Servo_Mover_Pot(int num, int potVal);
+void Servo_Mover_Pot_Small(int num, int potVal);
 #ifdef SERVO_DIRECT_POSITION
 void Servo_Config(int num, long min, long max);
 #else
-void Servo_Config(int num, int vel, short es, long min, long max);
+#warning "Se cambio el orden de las variables de Servo_Config en la libreria! COMPROBAR!!"
+void Servo_Config(int num, long min, long max, int vel, short es);
 void Servo_Active(int num, short en);
 void Servo_Refresh_Pos(void);
 #endif

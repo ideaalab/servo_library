@@ -30,7 +30,7 @@ produce una modificacion de la velocidad.
 ### Servos usados
 Hay que crear un define con la cantidad de servos a usar:
 ```
-define NUM_SERVOS	4
+#define NUM_SERVOS	4
 ```
 
 ### Pines de señal
