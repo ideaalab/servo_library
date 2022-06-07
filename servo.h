@@ -199,7 +199,8 @@ void Servo_Mover_Pot_Small(int num, int potVal);
 #ifdef SERVO_DIRECT_POSITION
 void Servo_Config(int num, long min, long max);
 #else
-#warning "Se cambio el orden de las variables de Servo_Config en la libreria! COMPROBAR!!"
+#warning "Se cambio el orden de las variables de Servo_Config en la libreria, COMPROBAR!!"
+
 void Servo_Config(int num, long min, long max, int vel, short es);
 void Servo_Active(int num, short en);
 void Servo_Refresh_Pos(void);
