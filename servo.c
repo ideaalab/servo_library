@@ -307,11 +307,11 @@ void Servo_Refresh_Pos(void){
  * Consume 202 de ROM
  */
 void Servo_Mover_Pot(int num, int potVal){
-signed int32 tmp = 0;
+signed int32 tmp;
 
 	tmp = potVal * RANGO_SERVOS;
 	tmp = tmp / POT_MAX_VAL;
-
+	
 	Servo_Mover(num, Servo[num].min + tmp);
 }
 
@@ -324,7 +324,7 @@ signed int32 tmp = 0;
  * Consume 76 de ROM
  */
 void Servo_Mover_Pot_Small(int num, int potVal){
-signed int32 tmp = 0;
+signed int32 tmp;
 
 	tmp = potVal * RANGO_SERVOS;
 	tmp = DIV_BY_256(tmp);
