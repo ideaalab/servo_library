@@ -75,7 +75,9 @@
 #error "No se pueden controlar mas de 4 servos con esta libreria"
 #endif
 
-#define T_T1				20	//cada cuanto interrumpe Timer1 en mS
+#define T_T1				5	//cada cuanto interrumpe Timer1 en mS
+#warning "Era 20, y se cambio por 5. COMPROBAR QUE NO GENERE PROBLEMAS. Se puede usar SERVO_REFRESH"
+#define SERVO_REFRESH		(T_T1 * 4)
 
 //velocidades
 #define SERVO_NUM_VEL		8
@@ -194,8 +196,15 @@ void CCP1_isr(void);
 
 void Servo_init(void);
 void Servo_Mover(int num, long pos);
+
+#if NUM_SERVOS == 1
+void Servo_Mover_Pot(int potVal);
+void Servo_Mover_Pot_Small(int potVal);
+#else
 void Servo_Mover_Pot(int num, int potVal);
 void Servo_Mover_Pot_Small(int num, int potVal);
+#endif
+
 #ifdef SERVO_DIRECT_POSITION
 void Servo_Config(int num, long min, long max);
 #else

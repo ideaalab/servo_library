@@ -194,7 +194,7 @@ void Servo_Active(int num, short en){
  * 
  * Usa 23 de ROM
  */
-void Servo_Mover(int num, long pos){
+void Servo_Mover(int num, long pos){	
 #ifdef SERVO_DIRECT_POSITION
 	Servo[num].pos = pos;
 #else
@@ -306,13 +306,22 @@ void Servo_Refresh_Pos(void){
  * 
  * Consume 202 de ROM
  */
+#if NUM_SERVOS == 1
+void Servo_Mover_Pot(int potVal){
+#else
 void Servo_Mover_Pot(int num, int potVal){
+#endif
+	
 signed int32 tmp;
 
 	tmp = potVal * RANGO_SERVOS;
 	tmp = tmp / POT_MAX_VAL;
 	
+#if NUM_SERVOS == 1
+	Servo_Mover(0, Servo[0].min + tmp);
+#else
 	Servo_Mover(num, Servo[num].min + tmp);
+#endif
 }
 
 /*
@@ -323,11 +332,19 @@ signed int32 tmp;
  * 
  * Consume 76 de ROM
  */
+#if NUM_SERVOS == 1
+void Servo_Mover_Pot_Small(int potVal){
+#else
 void Servo_Mover_Pot_Small(int num, int potVal){
+#endif
 signed int32 tmp;
 
 	tmp = potVal * RANGO_SERVOS;
 	tmp = DIV_BY_256(tmp);
 
+#if NUM_SERVOS == 1
+	Servo_Mover(0, Servo[0].min + tmp);
+#else
 	Servo_Mover(num, Servo[num].min + tmp);
+#endif
 }
