@@ -304,24 +304,24 @@ void Servo_Refresh_Pos(void){
  * Mueve el servo a una posicion acorde al valor de un potenciometro
  * Consume mas ROM pero es mas precisa
  * 
- * Consume 202 de ROM
+ * Consume 202 de ROM ¿?
  */
-#if NUM_SERVOS == 1
 void Servo_Mover_Pot(int potVal){
-#else
+signed int32 tmp;
+
+	tmp = potVal * RANGO_SERVOS;
+	tmp = tmp / POT_MAX_VAL;
+
+	Servo_Mover(0, Servo[0].min + tmp);
+}
+
 void Servo_Mover_Pot(int num, int potVal){
-#endif
-	
 signed int32 tmp;
 
 	tmp = potVal * RANGO_SERVOS;
 	tmp = tmp / POT_MAX_VAL;
 	
-#if NUM_SERVOS == 1
-	Servo_Mover(0, Servo[0].min + tmp);
-#else
 	Servo_Mover(num, Servo[num].min + tmp);
-#endif
 }
 
 /*
@@ -330,21 +330,24 @@ signed int32 tmp;
  * de acuerdo con el archivo de Excel adjunto para que los resultados sean
  * mas precisos
  * 
- * Consume 76 de ROM
+ * Consume 76 de ROM ¿?
  */
-#if NUM_SERVOS == 1
+
 void Servo_Mover_Pot_Small(int potVal){
-#else
-void Servo_Mover_Pot_Small(int num, int potVal){
-#endif
 signed int32 tmp;
 
 	tmp = potVal * RANGO_SERVOS;
 	tmp = DIV_BY_256(tmp);
 
-#if NUM_SERVOS == 1
+
 	Servo_Mover(0, Servo[0].min + tmp);
-#else
+}
+
+void Servo_Mover_Pot_Small(int num, int potVal){
+signed int32 tmp;
+
+	tmp = potVal * RANGO_SERVOS;
+	tmp = DIV_BY_256(tmp);
+
 	Servo_Mover(num, Servo[num].min + tmp);
-#endif
 }

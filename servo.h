@@ -197,13 +197,11 @@ void CCP1_isr(void);
 void Servo_init(void);
 void Servo_Mover(int num, long pos);
 
-#if NUM_SERVOS == 1
 void Servo_Mover_Pot(int potVal);
-void Servo_Mover_Pot_Small(int potVal);
-#else
 void Servo_Mover_Pot(int num, int potVal);
+
+void Servo_Mover_Pot_Small(int potVal);
 void Servo_Mover_Pot_Small(int num, int potVal);
-#endif
 
 #ifdef SERVO_DIRECT_POSITION
 void Servo_Config(int num, long min, long max);
