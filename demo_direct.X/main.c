@@ -105,9 +105,7 @@ void main(void){
 		int val = read_adc();		//lee ADC
 		
 		Servo_Mover_Pot(0, val);	//mueve el servo a la posicion correspondiente del potenciometro
-		Servo_Mover_Pot_Small(0, val);	//mueve el servo a la posicion correspondiente del potenciometro
-		Servo_Mover_Pot(0, val);	//mueve el servo a la posicion correspondiente del potenciometro
-		Servo_Mover_Pot_Small(0, val);	//mueve el servo a la posicion correspondiente del potenciometro
+		//Servo_Mover_Pot_Small(0, val);	//mueve el servo a la posicion correspondiente del potenciometro
 		
 #ifdef DEBUG
 		printf("Pot: %3u | Srv: %4Lu\r\n", val, Servo[0].pos);
