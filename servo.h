@@ -109,6 +109,8 @@
 #define SERVO_POS_MAX		2500	//posicion maxima del servo
 #endif
 
+#define SERVO_POS_MID		((SERVO_POS_MIN + SERVO_POS_MAX) / 2)
+
 #ifndef SERVO_POS1
 #define SERVO_POS1			700		//posicion1 por defecto
 #endif
